@@ -1,0 +1,123 @@
+create schema stage_pcm_dev
+
+create table if not exists  `stage_pcm_cards.pcm_cards` (
+DATE string options(description='System date'),
+SYS_TM	string options(description='System time'),
+CREDIT_CARD_NUM	string not null options(description='credit card number'),
+TRAN_LOCAL_DT	string options(description='Transaction locate date'),
+TRAN_LOCAL_TM	string options(description='Transaction locate Time'),
+CREDIT_CARD_ORG_ID	string options(description='Credit Card Org ID'),
+PROD_NAME_CHAR string options(description='Product name'),
+TRAN_MRCH_TYPE string options(description='Transaction Merchant type'),
+TRAN_MRCH_ID string options(description='Transaction Merchant id'),
+TRAN_MRCH_NAME strig options(description='Transaction Merchant name'),
+TRAN_TYPE string options(description='Transaction type'),
+CREDIT_BAL_VAL string options(description='Credit balance position'),
+TRAN_SYSTM_ACT_VAL string options(description='Transaction system action'),
+TRAN_FINAL_ACT_VAL string options(description='Transaction final action'),
+TRAN_REQUST_TYP_ID string options(description='Transaction Request type ID'),
+TRAN_ACTION_DESC string options(description='Transaction action description'),
+TRAN_AMT string options(description='Transaction amount'),
+TRAN_DCML_NUM string options(description='Transaction number of decimals'),
+TRAN_BILL_AMT string options(description='Transaction billing amount'),
+TRAN_BILL_CDE string options(description='Transaction billing currency code'),
+ORG_CURR_DCML_NUM string options(description='Organization currency decimal'),
+TRAN_CRNCY_CDE string options(description='Transaction currency'),
+TRAN_ACTN_LNG_DESC string options(description='Transaction action long description'),
+TRAN_ACTION_CDE	string options(description='Transaction action code'),
+TRAN_POS_DATA_VAL string options(description='Transaction Point of sale data Value'),
+TRAN_POS_COND_CDE string options(description='Transaction Point of sale condition code'),
+CREDIT_LIMIT_AMT string options(description='Credit limit amount'),
+ITRAN_CAT_CDE string options(description='Transaction category code'),
+TRAN_POS_ENT_CDE string options(description='Transaction Point of sale entry codi'),
+ITRAN_TUN_REQ_ID striing options(description='Transaction token req ID'),
+TRAN_TKN_MSG string options(description='Transaction token message type'),
+TRAN_SUB_DATA string options(description='Transaction Token data'),
+CREDIT_ACC_NUM string options(description='Credit account number'),
+CREDIT_CRD_ID string options(description='Credit Card Holder Type'),
+TRAN_PROC_CODE string options(description='Processing code')
+)
+
+create schema silver_pcm_dev
+
+
+create table if not exists gcp-renuka.silver_pcm_dev.silver_pcm_cards
+ 
+(SYS_DT  DATE options(description='System date'),
+SYS_TM	TIME options(description='System time'),
+CREDIT_CARD_NUM	BIGINT options(description='credit card number'),
+TRAN_LOCAL_DT	DATE options(description='Transaction locate date'),
+TRAN_LOCAL_TM	TIME options(description='Transaction locate Time'),
+CREDIT_CARD_ORG_ID	SMALLINT options(description='Credit Card Org ID'),
+PROD_NAME	string options(description='Product name'),
+TRAN_MRCH_TYPE	SMALLINT options(description='Transaction Merchant type'),
+TRAN_MRCH_ID	string	options(description='Transaction Merchant id'),
+TRAN_MRCH_NAME	string	options(description='Transaction Merchant name'),
+TRAN_TYPE	SMALLINT options(description='Transaction type'),
+CREDIT_BAL_VAL	BIGINT	options(description='Credit balance position'),
+TRAN_SYSTM_ACT_VAL	STRING options(description='Transaction system action'),
+TRAN_FINAL_ACT_VAL	STRING options(description='Transaction final action'),
+TRAN_REQUST_TYP_ID	STRING options(description='Transaction Request type ID'),
+TRAN_ACTION_DESC	string options(description='Transaction action description'),
+TRAN_AMT	BIGINT	options(description='Transaction amount'),
+TRAN_DCML_NUM	SMALLINT options(description='Transaction number of decimals'),
+TRAN_BILL_AMT	SMALLINT options(description='Transaction billing amount'),
+TRAN_BILL_CDE	SMALLINT options(description='Transaction billing currency code'),
+ORG_CURR_DCML_NUM	SMALLINT options(description='Organization currency decimal'),
+TRAN_CRNCY_CDE	SMALLINT options(description='Transaction currency'),
+TRAN_ACTN_LNG_DESC	STRING options(description='Transaction action long description'),
+TRAN_ACTION_CDE	SMALLINT	options(description='Transaction action code'),
+TRAN_POS_DATA_VAL STRING	options(description='Transaction Point of sale data Value'),
+TRAN_POS_COND_CDE SMALLINT options(description='Transaction Point of sale condition code'),
+CREDIT_LIMIT_AMT BIGINT	options(description='Credit limit amount'),
+ITRAN_CAT_CDE STRING options(description='Transaction category code'),
+TRAN_POS_ENT_CDE BIGINT	options(description='Transaction Point of sale entry codi'),
+ITRAN_TUN_REQ_ID STRING options(description='Transaction token req ID'),
+TRAN_TKN_MSG STRING	options(description='Transaction token message type'),
+TRAN_SUB_DATA	STRING options(description='Transaction Token data'),
+CREDIT_ACC_NUM	BIGINT	options(description='Credit account number'),
+CREDIT_CRD_ID	SMALLINT options(description='Credit Card Holder Type'),
+TRAN_PROC_CODE	INT options(description='Processing code'),
+LAST_INGESTION_TIMESTAMP  TIMESTAMP options(description='ingestion time'),
+PRM_LNE_OF_BUS_CDE_FILTER STRING options(description='filter code'),
+CTRY_CDE_FILTER STRING options(description='country code filter'),
+ENTITY_CDE_FILTER STRING options(description='entity code filter'));
+
+
+
+create schema audit_pcm_dev
+
+create table if not exists audit_pcm_dev.stage_pcm_cards
+(datasetname string options(description='dataset_name'), 
+table_name string,
+total_records int64,
+audit_date timestamp,
+audit_by string);
+
+
+INSERT INTO
+  audit_pcm_dev.stage_pcm_cards
+SELECT
+  "audit_pcm_dev" as datasetname,"stage_pcm_cards" as table_name,
+   count(*) as total_records,current_timestamp() as audit_date,"renuka" as audit_by from stage_pcm_dev.pcm_cards
+
+
+create table if not exists audit_pcm_dev.silver_pcm_cards
+
+(datasetname string options(description='dataset_name'), 
+table_name string,
+total_records int64,
+audit_date timestamp,
+audit_by string);
+
+INSERT INTO
+  audit_pcm_dev.silver_pcm_cards
+SELECT
+  "audit_pcm_dev" as datasetname,"silver_pcm_cards" as table_name,
+   count(*) as total_records,current_timestamp() as audit_date,"renuka" as audit_by from stage_pcm_dev.silver_pcm_cards
+
+gsutil init
+gsutil mb gs://usecase_3_pcm
+gsutil cp "C:\CDE\gcs\usecase_3_ PCM_DATA.csv" gs://usecase_3_pcm
+gsutil cat gs;//usecase_3_pcm
+bq load --source_format=CSV --skip_leading_rows=1 stage_pcm_dev.pcm_cards "C:\CDE\gcs\usecase_3_ PCM_DATA.csv" gs://usecase_3_pcm
